@@ -7,8 +7,8 @@ services:
       - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
       # N8N_EDITOR_BASE_URL và WEBHOOK_URL nên trỏ đến địa chỉ nội bộ của n8n trong Docker network.
       # 'svr_n8n' là tên service, Docker Compose sẽ tự động phân giải thành IP nội bộ.
-      - N8N_EDITOR_BASE_URL=http://svr_n8n:5678
-      - WEBHOOK_URL=http://svr_n8n:5678
+      - N8N_EDITOR_BASE_URL=${EXTERNAL_IP}
+      - WEBHOOK_URL=${EXTERNAL_IP}
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_MCP_ENABLED=true
       - N8N_MCP_MODE=server

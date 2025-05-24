@@ -13,8 +13,8 @@ services:
       - N8N_MCP_ENABLED=true
       - N8N_MCP_MODE=server
       # Không cần thiết lập N8N_HOST và WEBHOOK_URL với IP bên ngoài khi dùng ngrok
-      # - N8N_HOST=${EXTERNAL_IP}
-      # - WEBHOOK_URL=${EXTERNAL_IP}
+      - N8N_HOST=https://charmed-constantly-goat.ngrok-free.app
+      - WEBHOOK_URL=https://charmed-constantly-goat.ngrok-free.app
     ports:
       - "5678:5678" # N8n mặc định chạy trên cổng 5678 bên trong container
     volumes:
@@ -24,7 +24,7 @@ services:
     image: ngrok/ngrok
     container_name: cont_ngrok
     environment:
-      NGROK_AUTHTOKEN: your_authtoken_here # THAY THẾ BẰNG cr_2xUfBB7a6VLxegoEN4ZY3DET3hs
+      NGROK_AUTHTOKEN: 2xUfBB7a6VLxegoEN4ZY3DET3hs_523GeEQn8de4FvEFTAEgu # THAY THẾ BẰNG cr_2xUfBB7a6VLxegoEN4ZY3DET3hs
     ports:
       - "4040:4040" # Giao diện web ngrok (tùy chọn)
     command:

@@ -5,24 +5,14 @@ services:
     environment:
       - N8N_SECURE_COOKIE=false
       - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
-      # N8N_EDITOR_BASE_URL và WEBHOOK_URL nên trỏ đến địa chỉ nội bộ của n8n trong Docker network.
-      # 'svr_n8n' là tên service, Docker Compose sẽ tự động phân giải thành IP nội bộ.
       - N8N_EDITOR_BASE_URL=${EXTERNAL_IP}
       - WEBHOOK_URL=${EXTERNAL_IP}
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_MCP_ENABLED=true
       - N8N_MCP_MODE=server
-      # Bỏ các URL ngrok cứng nhắc ở đây, vì chúng sẽ thay đổi với gói miễn phí
-      # và sẽ được cấu hình trong n8n UI sau khi ngrok tunnel được thiết lập.
-      - N8N_HOST=https://sacred-boar-brightly.ngrok-free.app
-      - WEBHOOK_URL=https://sacred-boar-brightly.ngrok-free.app
-      - N8N_PROTOCOL=http # Sử dụng http cho giao tiếp nội bộ, ngrok sẽ xử lý https bên ngoài
-      - N8N_ALLOWED_FILE_SYSTEM_PATHS=/home/node/data
+      - N8N_HOST=${EXTERNAL_IP}
+      - WEBHOOK_URL=${EXTERNAL_IP}
     ports:
-      # Ánh xạ cổng 5678 của container n8n ra cổng 5678 trên máy chủ AWS.
-      # Bạn có thể truy cập n8n trực tiếp qua IP công khai của AWS (3.26.240.25:5678)
-      # nếu Security Group cho phép, hoặc ngrok sẽ tunnel đến đây.
       - "5678:5678"
     volumes:
       - ${CURR_DIR}/vol_n8n:/home/node/.n8n
-    # Kiểm tra sức khỏe của n8n để đảm bảo nó khởi động hoàn chỉnh trước khi ngrok kết nối

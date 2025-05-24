@@ -1,0 +1,54 @@
+services:
+  svr_n8n:
+    image: n8nio/n8n
+    container_name: cont_n8n
+    environment:
+      - N8N_SECURE_COOKIE=false
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+      # N8N_EDITOR_BASE_URL và WEBHOOK_URL nên trỏ đến địa chỉ nội bộ của n8n trong Docker network.
+      # 'svr_n8n' là tên service, Docker Compose sẽ tự động phân giải thành IP nội bộ.
+      - N8N_EDITOR_BASE_URL=http://svr_n8n:5678
+      - WEBHOOK_URL=http://svr_n8n:5678
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_MCP_ENABLED=true
+      - N8N_MCP_MODE=server
+      # Bỏ các URL ngrok cứng nhắc ở đây, vì chúng sẽ thay đổi với gói miễn phí
+      # và sẽ được cấu hình trong n8n UI sau khi ngrok tunnel được thiết lập.
+      - N8N_HOST=https://sacred-boar-brightly.ngrok-free.app
+      - WEBHOOK_URL=https://sacred-boar-brightly.ngrok-free.app
+      - N8N_PROTOCOL=http # Sử dụng http cho giao tiếp nội bộ, ngrok sẽ xử lý https bên ngoài
+      - N8N_ALLOWED_FILE_SYSTEM_PATHS=/home/node/data
+    ports:
+      # Ánh xạ cổng 5678 của container n8n ra cổng 5678 trên máy chủ AWS.
+      # Bạn có thể truy cập n8n trực tiếp qua IP công khai của AWS (3.26.240.25:5678)
+      # nếu Security Group cho phép, hoặc ngrok sẽ tunnel đến đây.
+      - "5678:5678"
+    volumes:
+      - ${CURR_DIR}/vol_n8n:/home/node/.n8n
+    # Kiểm tra sức khỏe của n8n để đảm bảo nó khởi động hoàn chỉnh trước khi ngrok kết nối
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5678 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s # Cho n8n thêm thời gian để khởi động
+
+  ngrok:
+    image: ngrok/ngrok
+    container_name: cont_ngrok
+    environment:
+      # THAY THẾ <YOUR_NGROK_AUTHTOKEN> bằng auth token thực tế của bạn
+      # Lấy token từ: https://dashboard.ngrok.com/get-started/your-authtoken
+      - NGROK_AUTHTOKEN=2xUfBB7a6VLxegoEN4ZY3DET3hs_523GeEQn8de4FvEFTAEgu
+    command:
+      # Khởi động ngrok, tạo tunnel HTTP đến cổng 5678 của service n8n.
+      # 'svr_n8n' là tên service trong docker-compose, nó sẽ phân giải thành IP nội bộ của n8n.
+      - "http"
+      - "svr_n8n:5678"
+    ports:
+      # Expose giao diện web của ngrok (Debugger UI) để kiểm tra tunnel (tùy chọn nhưng hữu ích).
+      # Bạn có thể truy cập nó tại http://<Public_IP_AWS>:4040 hoặc http://localhost:4040 trên máy chủ AWS.
+      - "4040:4040"
+    depends_on:
+      svr_n8n:
+        condition: service_healthy # Đảm bảo n8n đã healthy trước khi ngrok cố gắng kết nối
